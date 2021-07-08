@@ -35,8 +35,9 @@
         <param name="corner_refinement"  value="$(arg corner_refinement)" />
     </node>
 
-	<node pkg="marker_pose" type="save_marker" name="save_marker" output="screen" />
+	<!-- <node pkg="marker_pose" type="save_marker" name="save_marker" output="screen" />-->
 	<node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" />
+	<node pkg="marker_pose" type="go_stop" name="go_stop" output="screen" />
     
     <node name="scout_base_node" pkg="scout_base" type="scout_base_node" output="screen">
         <param name="port_name" type="string" value="$(arg port_name)" />
