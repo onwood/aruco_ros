@@ -12,7 +12,8 @@ int sleep_cnt = 0;
 void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
 {   
 	ros::NodeHandle nh;    
-    pub = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
+    pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel",100);
+    // pub = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
     geometry_msgs::Twist pub_msg;
     ros::Rate r(1);
 
@@ -96,18 +97,18 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
 
         if (id == 3)
         {
-            if (point_x > 0.02)
+            if (point_x > 0.1)
             {
                 ROS_INFO("turn right");
                 pub_msg.linear.x = 0;
-                pub_msg.angular.z = -5;
+                pub_msg.angular.z = -0.1;
                 pub.publish(pub_msg);
             }
-            else if (point_x < -0.02)
+            else if (point_x < -0.1)
             {
                 ROS_INFO("turn left");
                 pub_msg.linear.x = 0;
-                pub_msg.angular.z = 5;
+                pub_msg.angular.z = 0.1;
                 pub.publish(pub_msg);
             }
             else // if ((point_x <= 0.02) && (point_x >= -0.02))
@@ -118,6 +119,7 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
                     pub_msg.linear.x = 0;
                     pub_msg.angular.z = 0;
                     pub.publish(pub_msg);
+                    sleep_cnt++;
                 }
                 else
                 {
@@ -135,7 +137,7 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
             pub.publish(pub_msg);
         }
     r.sleep();
-    sleep_cnt++;
+    // sleep_cnt++;
     //     if (point_z < 1) 
     //     {
     //         ROS_INFO("stop");
@@ -187,5 +189,4 @@ int main(int argc, char **argv)
 	ros::spin();
 
 	return 0;
-	
 }
