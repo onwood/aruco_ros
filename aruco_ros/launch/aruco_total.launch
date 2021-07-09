@@ -43,5 +43,6 @@
         <param name="port_name" type="string" value="$(arg port_name)" />
         <param name="simulated_robot" type="bool" value="$(arg simulated_robot)" />
     </node>
+    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" />
 </launch>
 
