@@ -66,9 +66,15 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
                     pub_msg.angular.z = -1.5707963268/4.0;
                     pub.publish(pub_msg);
                     sleep_cnt++;
-                    if (sleep_cnt > 2)
+                    if (sleep_cnt > 4)
                     {
                         ROS_INFO("turn at edge");
+                        pub_msg.angular.z = 0;
+                        pub.publish(pub_msg);
+                        ros::Duration(2.0).sleep();
+                        pub_msg.linear.x = 0.2;
+                        pub.publish(pub_msg);
+                        ros::Duration(2.0).sleep();
                         pub_msg.angular.z = 0;
                         pub.publish(pub_msg);
                         sleep_cnt = 0;   
