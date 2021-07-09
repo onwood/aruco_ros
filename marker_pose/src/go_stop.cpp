@@ -30,65 +30,67 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     ROS_INFO("point_x = %f", point_x);
     ROS_INFO("distance = %f", point_z);
 
-        if (id == 3)
+    if ( (id == 3) || (id == 6) || (id == 9) || (id == 12) )
+    {
+        if (point_x > 0.1)
         {
-            if (point_x > 0.1)
+            ROS_INFO("turn right");
+            pub_msg.linear.x = 0;
+            pub_msg.angular.z = -0.1;
+            pub.publish(pub_msg);
+        }
+        else if (point_x < -0.1)
+        {
+            ROS_INFO("turn left");
+            pub_msg.linear.x = 0;
+            pub_msg.angular.z = 0.1;
+            pub.publish(pub_msg);
+        }
+        else // if ((point_x <= 0.02) && (point_x >= -0.02))
+        {
+            if (point_z > 0.77)
             {
-                ROS_INFO("turn right");
-                pub_msg.linear.x = 0;
-                pub_msg.angular.z = -0.1;
+                ROS_INFO("go");
+                pub_msg.linear.x = 0.2;
                 pub.publish(pub_msg);
             }
-            else if (point_x < -0.1)
+            else
             {
-                ROS_INFO("turn left");
+                ROS_INFO("stop");
+                ros::Duration(2.0).sleep();
                 pub_msg.linear.x = 0;
-                pub_msg.angular.z = 0.1;
+                pub_msg.angular.z = 0;
                 pub.publish(pub_msg);
-            }
-            else // if ((point_x <= 0.02) && (point_x >= -0.02))
-            {
-                if (point_z > 0.77)
+                if ( (id == 3) || (id == 6) || (id == 9) || (id == 12) )
                 {
-                    pub_msg.linear.x = 0.2;
-                    pub.publish(pub_msg);
-                }
-                else
-                {
-                    ROS_INFO("stop");
-                    ros::Duration(2.0).sleep();
-                    pub_msg.linear.x = 0;
-                    pub_msg.angular.z = 0;
-                    pub.publish(pub_msg);
                     pub_msg.angular.z = -1.5707963268/4.0;
                     pub.publish(pub_msg);
                     sleep_cnt++;
                     if (sleep_cnt > 2)
                     {
+                        ROS_INFO("turn at edge");
                         pub_msg.angular.z = 0;
                         pub.publish(pub_msg);
+                        sleep_cnt = 0;   
                     }
                 }
-                    // if()
-                    // {
-                    //     pub_msg.linear.x = 0
-                    // }
-                // else
+                // pub_msg.linear.x = 0.2;
+                // pub.publish(pub_msg);
+                // ros::Duration(1.0).sleep();
+                // if (msg->pose.position.z > 0.77)
                 // {
-                //     ROS_INFO("stop turning and go forward");
-                //     pub_msg.linear.x = 0.0;
-                //     pub_msg.angular.z = 0;
+                //     pub_msg.linear.x = 0.2;
                 //     pub.publish(pub_msg);
-
                 // }
             }
         }
-        else
-        {
-            ROS_INFO("Go foward");
-            pub_msg.linear.x = 0.1;
-            pub.publish(pub_msg);
-        }
+    }
+    else
+    {
+        ROS_INFO("Go foward");
+        pub_msg.linear.x = 0.1;
+        pub.publish(pub_msg);
+    }
     // r.sleep();
 }
 
