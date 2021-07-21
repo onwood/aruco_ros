@@ -1,6 +1,10 @@
 #include "ros/ros.h"
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/Twist.h"
+#include <fstream>
+#include <iostream>
+#include <string>
+using namespace std;
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -17,6 +21,22 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     geometry_msgs::Twist pub_msg;
     ros::Rate r(1);
 
+    ifstream fin("/home/acsl/Socket/orae_log.txt"); // fin 객체 생성(cin 처럼 이용!)
+
+    string str;
+    string marker_id;
+    while (getline(fin, str)) // 파일이 끝날때까지 한 줄씩 읽어오기
+    {
+        if (str.length() > 20)
+        {
+            marker_id = str.substr(14, str.length() - 15);
+             //.substr(14, str.length() - 15) << endl;
+        }
+    }
+    cout << marker_id << endl;
+
+    fin.close(); // 파일 닫기
+
     int id = msg->id;
     double point_x = msg->pose.position.x;
 	double point_y = msg->pose.position.y;
@@ -30,7 +50,15 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     ROS_INFO("point_x = %f", point_x);
     ROS_INFO("distance = %f", point_z);
 
-    if ( (id == 3) || (id == 6) || (id == 9) || (id == 12) )
+    if (id > 48)
+    {
+        ROS_INFO("Markder Error");
+        pub_msg.linear.x = 0;
+        pub_msg.angular.z = 0;
+        pub.publish(pub_msg);
+    }
+    
+    else if ( (id == 3) || (id == 9) || (id == 33) || (id == 36) )
     {
         if (point_x > 0.1)
         {
@@ -48,11 +76,29 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
         }
         else // if ((point_x <= 0.02) && (point_x >= -0.02))
         {
+            
             if (point_z > 0.77)
             {
-                ROS_INFO("go");
-                pub_msg.linear.x = 0.2;
-                pub.publish(pub_msg);
+                if (point_x > 0.1)
+                {
+                    ROS_INFO("turn right");
+                    pub_msg.linear.x = 0;
+                    pub_msg.angular.z = -0.1;
+                    pub.publish(pub_msg);
+                }
+                else if (point_x < -0.1)
+                {
+                    ROS_INFO("turn left");
+                    pub_msg.linear.x = 0;
+                    pub_msg.angular.z = 0.1;
+                    pub.publish(pub_msg);
+                }
+                else
+                {
+                    ROS_INFO("go");
+                    pub_msg.linear.x = 0.2;
+                    pub.publish(pub_msg);
+                }
             }
             else
             {
@@ -61,7 +107,7 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
                 pub_msg.linear.x = 0;
                 pub_msg.angular.z = 0;
                 pub.publish(pub_msg);
-                if ( (id == 3) || (id == 6) || (id == 9) || (id == 12) )
+                if (id == 9) 
                 {
                     pub_msg.angular.z = -1.5707963268/4.0;
                     pub.publish(pub_msg);
@@ -80,6 +126,26 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
                         sleep_cnt = 0;   
                     }
                 }
+                else if (id == 33)
+                {
+                    pub_msg.angular.z = 1.5707963268/4.0;
+                    pub.publish(pub_msg);
+                    sleep_cnt++;
+                    if (sleep_cnt > 4)
+                    {
+                        ROS_INFO("turn at edge");
+                        pub_msg.angular.z = 0;
+                        pub.publish(pub_msg);
+                        ros::Duration(2.0).sleep();
+                        pub_msg.linear.x = 0.2;
+                        pub.publish(pub_msg);
+                        ros::Duration(2.0).sleep();
+                        pub_msg.angular.z = 0;
+                        pub.publish(pub_msg);
+                        sleep_cnt = 0;   
+                    }
+                }
+                
                 // pub_msg.linear.x = 0.2;
                 // pub.publish(pub_msg);
                 // ros::Duration(1.0).sleep();
@@ -91,11 +157,51 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
             }
         }
     }
-    else
+    // else if ( (id == 12) || (id == 45) )
+    // {
+    //     ROS_INFO("No go foward");
+    //     pub_msg.angular.z = 1.5707963268/4.0;
+    //     pub.publish(pub_msg);
+    //     pub_msg.linear.x = 0;
+    //     pub.publish(pub_msg);
+    // }
+    else if (id == 36)
     {
         ROS_INFO("Go foward");
         pub_msg.linear.x = 0.1;
         pub.publish(pub_msg);
+        if (point_z < 0.77)
+        {
+            ROS_INFO("Stop");
+            ros::Duration(2.0).sleep();
+            pub_msg.linear.x = 0;
+            pub.publish(pub_msg);
+        }
+        
+    }
+    else
+    {
+        if (point_x > 0.1)
+        {
+            ROS_INFO("turn right");
+            pub_msg.linear.x = 0;
+            pub_msg.angular.z = -0.1;
+            pub.publish(pub_msg);
+        }
+        else if (point_x < -0.1)
+        {
+            ROS_INFO("turn left");
+            pub_msg.linear.x = 0;
+            pub_msg.angular.z = 0.1;
+            pub.publish(pub_msg);
+        }
+        else
+        {
+            ROS_INFO("Go foward");
+            pub_msg.linear.x = 0.1;
+            pub.publish(pub_msg);
+        }
+        
     }
     // r.sleep();
 }
@@ -105,10 +211,11 @@ int main(int argc, char **argv)
     ros::init(argc,argv,"go_stop");
 	
 	ros::NodeHandle nh;
+    
+    // pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel",100);
 
     ros::Subscriber sub = nh.subscribe("/aruco_single/marker",10,msgCallback);	
 
 	ros::spin();
-
 	return 0;
 }
