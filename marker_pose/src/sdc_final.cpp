@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include "typeinfo"
+#include <stdlib.h>
 using namespace std;
 
 #define _USE_MATH_DEFINES
@@ -35,7 +36,6 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
         if (str.length() > 20)
         {
             marker_id = str.substr(14, str.length() - 15);
-             //.substr(14, str.length() - 15) << endl;
         }
     }
     fin.close(); // 파일 닫기
@@ -50,39 +50,11 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
         marker_id_split.push_back(n);
     }
 
-    // int id = msg->id;
-    // double point_x = msg->pose.position.x;
-	// double point_y = msg->pose.position.y;
-    // double point_z = msg->pose.position.z;
     // double ori_x = msg->pose.orientation.x;
     // double ori_y = msg->pose.orientation.y;
     // double ori_z = msg->pose.orientation.z;
     // double ori_w = msg->pose.orientation.w;
 
-    // ROS_INFO("id = %d", id);
-    // ROS_INFO("point_x = %f", point_x);
-    // ROS_INFO("distance = %f", point_z);
-
-    // for (int i=0;i<marker_id_split.size();i++){
-    //     int id = msg->id;
-    //     double point_x = msg->pose.position.x;
-    //     double point_y = msg->pose.position.y;
-    //     double point_z = msg->pose.position.z;
-    //     ROS_INFO("id = %d", id);
-    //     ROS_INFO("point_x = %f", point_x);
-    //     ROS_INFO("distance = %f", point_z);
-    //     cout << "marker_id_split" << i << ": " << marker_id_split[i] << endl ;
-    //     cout << "outside_i: " << i << endl;
-    //     if (id == marker_id_split[i])
-    //     {
-    //         cout << "straight" << endl;
-    //     }
-    //     else
-    //     {
-    //         i = i-1;
-    //         cout << "else_i: " << i << endl;
-    //     }
-    // }
     int id = msg->id;
     double point_x = msg->pose.position.x;
     double point_y = msg->pose.position.y;
@@ -93,20 +65,81 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     cout << "marker_id_split" << marker_id_cnt << ": " << marker_id_split[marker_id_cnt] << endl ;
     cout << "outside_cnt: " << marker_id_cnt << endl;
 
-    if (marker_id_split[marker_id_cnt] > 0)
-        if (id == marker_id_split[marker_id_cnt])
+    if (marker_id_cnt <= marker_id_split.size())
+    {
+        cout << "marker_id_split_size: " << marker_id_split.size() << endl;
+        int marker_id_gap = marker_id_split[marker_id_cnt+1] - marker_id_split[marker_id_cnt];
+
+        if (id > 48)
         {
-            cout << "straight" << endl;
-            marker_id_cnt++;
-            cout << "marker_id_cnt: " << marker_id_cnt << endl;
+            ROS_INFO("Marker id is too high");
+        }
+        else if (id == marker_id_split[marker_id_cnt])
+        {
+            // cout << "straight" << endl;
+            // cout << "marker_id_cnt: " << marker_id_cnt << endl;
+                
+            if (point_z > 0.77)
+            {
+                if (point_x > 0.1)
+                {
+                    ROS_INFO("turn right");
+                    pub_msg.linear.x = 0;
+                    pub_msg.angular.z = -0.1;
+                    pub.publish(pub_msg);
+                }
+                else if (point_x < -0.1)
+                {
+                    ROS_INFO("turn left");
+                    pub_msg.linear.x = 0;
+                    pub_msg.angular.z = 0.1;
+                    pub.publish(pub_msg);
+                }
+                else
+                {
+                    ROS_INFO("go");
+                    pub_msg.linear.x = 0.2;
+                    pub.publish(pub_msg);
+                }
+            }
+            else
+            {
+                ROS_INFO("stop");
+                ros::Duration(4.0).sleep();
+                pub_msg.linear.x = 0;
+                pub_msg.angular.z = 0;
+                pub.publish(pub_msg);
+                marker_id_cnt++;
+            }
         }
         else
         {
-            cout << "trun" << endl;
+            
+            cout << "turn" << endl;
+            pub_msg.angular.z = -1.5707963268/4.0;
+            pub.publish(pub_msg);
+            // sleep_cnt++;
+            // if (sleep_cnt > 4)
+            // {
+            //     ROS_INFO("turn at edge");
+            //     pub_msg.angular.z = 0;
+            //     pub.publish(pub_msg);
+            //     ros::Duration(2.0).sleep();
+            //     pub_msg.linear.x = 0.2;
+            //     pub.publish(pub_msg);
+            //     ros::Duration(2.0).sleep();
+            //     pub_msg.angular.z = 0;
+            //     pub.publish(pub_msg);
+            //     sleep_cnt = 0;   
+            // }
         }
+    }
     else
     {
         cout<< "stop" << endl;
+        pub_msg.linear.x = 0;
+        pub_msg.angular.z = 0;
+        pub.publish(pub_msg);
     }
     
     // if (id > 48)
