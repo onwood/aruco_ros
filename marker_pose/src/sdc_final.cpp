@@ -15,6 +15,7 @@ using namespace std;
 
 ros::Publisher pub;
 int sleep_cnt = 0;
+int marker_id_cnt = 0;
 
 void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
 {   
@@ -49,23 +50,65 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
         marker_id_split.push_back(n);
     }
 
-    for (int i=0;i<marker_id_split.size();i++){
-        cout << "marker_id_split" << i << ": " << marker_id_split[i] << endl ;
-    }
+    // int id = msg->id;
+    // double point_x = msg->pose.position.x;
+	// double point_y = msg->pose.position.y;
+    // double point_z = msg->pose.position.z;
+    // double ori_x = msg->pose.orientation.x;
+    // double ori_y = msg->pose.orientation.y;
+    // double ori_z = msg->pose.orientation.z;
+    // double ori_w = msg->pose.orientation.w;
 
+    // ROS_INFO("id = %d", id);
+    // ROS_INFO("point_x = %f", point_x);
+    // ROS_INFO("distance = %f", point_z);
+
+    // for (int i=0;i<marker_id_split.size();i++){
+    //     int id = msg->id;
+    //     double point_x = msg->pose.position.x;
+    //     double point_y = msg->pose.position.y;
+    //     double point_z = msg->pose.position.z;
+    //     ROS_INFO("id = %d", id);
+    //     ROS_INFO("point_x = %f", point_x);
+    //     ROS_INFO("distance = %f", point_z);
+    //     cout << "marker_id_split" << i << ": " << marker_id_split[i] << endl ;
+    //     cout << "outside_i: " << i << endl;
+    //     if (id == marker_id_split[i])
+    //     {
+    //         cout << "straight" << endl;
+    //     }
+    //     else
+    //     {
+    //         i = i-1;
+    //         cout << "else_i: " << i << endl;
+    //     }
+    // }
     int id = msg->id;
     double point_x = msg->pose.position.x;
-	double point_y = msg->pose.position.y;
+    double point_y = msg->pose.position.y;
     double point_z = msg->pose.position.z;
-    double ori_x = msg->pose.orientation.x;
-    double ori_y = msg->pose.orientation.y;
-    double ori_z = msg->pose.orientation.z;
-    double ori_w = msg->pose.orientation.w;
-
     ROS_INFO("id = %d", id);
     ROS_INFO("point_x = %f", point_x);
     ROS_INFO("distance = %f", point_z);
+    cout << "marker_id_split" << marker_id_cnt << ": " << marker_id_split[marker_id_cnt] << endl ;
+    cout << "outside_cnt: " << marker_id_cnt << endl;
 
+    if (marker_id_split[marker_id_cnt] > 0)
+        if (id == marker_id_split[marker_id_cnt])
+        {
+            cout << "straight" << endl;
+            marker_id_cnt++;
+            cout << "marker_id_cnt: " << marker_id_cnt << endl;
+        }
+        else
+        {
+            cout << "trun" << endl;
+        }
+    else
+    {
+        cout<< "stop" << endl;
+    }
+    
     // if (id > 48)
     // {
     //     ROS_INFO("Markder Error");

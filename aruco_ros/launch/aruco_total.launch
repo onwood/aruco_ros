@@ -40,9 +40,13 @@
 
 	<!--<node pkg="marker_pose" type="save_marker" name="save_marker" output="screen" />-->
 	<!-- <node pkg="turtlesim" type="turtlesim_node" name="turtlesim_node" /> -->
-    <node pkg="marker_pose" type="go_stop" name="go_stop" output="screen" />
+    <!-- <node pkg="marker_pose" type="go_stop" name="go_stop" output="screen" /> -->
+    <node pkg="marker_pose" type="sdc_final" name="sdc_final" output="screen" />
     <node name="scout_base_node" pkg="scout_base" type="scout_base_node" output="screen">
         <param name="port_name" type="string" value="$(arg port_name)" />
         <param name="simulated_robot" type="bool" value="$(arg simulated_robot)" />
     </node>
+
+    <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui" output="screen" />
+    
 </launch>
