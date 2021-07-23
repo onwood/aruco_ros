@@ -1,4 +1,7 @@
 locate = [9,6,18,15,27,30,33,21,18,6]
+locate.insert(0, locate[0] - 12)
+# print(locate)
+
 def arrow(a):
     if abs(a) == 12:
         if a > 0:
@@ -9,13 +12,9 @@ def arrow(a):
 
     elif abs(a) == 3:
         if a > 0:
-            return 'left'
-        else:
             return 'right'
-    
-#have to go
-a = locate[2] - locate[1]
-# print('have to go ', arrow(a))
+        else:
+            return 'left'
 
 #head direction
 for i in range(1, len(locate)):
@@ -25,28 +24,31 @@ for i in range(1, len(locate)):
 
     print(locate[i], arrow(head))
     print('direction : ', direction)
+    if i == len(locate)-1:
+        print('stop')
+        break
+    else:
+        if (direction == 'down'):
+            if locate[i+1] < locate[i]:
+                print('turn right')
+            elif locate[i+1] > locate[i]:
+                print('turn left')
 
-    if (direction == 'down'):
-        if locate[i-1] < locate[i]:
-            print('turn left')
-        elif locate[i-1] > locate[i]:
-            print('turn right')
+        if (direction =='left'):
+            if locate[i+1] < locate[i]:
+                print('turn right')
+            elif locate[i+1] > locate[i]:
+                print('turn left')
 
-    if (direction =='left'):
-        if locate[i-1] < locate[i]:
-            print('turn left')
-        elif locate[i-1] >  locate[i]:
-            print('turn right')
-
-    if (direction == 'up'):
-        if locate[i-1] > locate[i]:
-            print('turn left')
-        elif locate[i-1] < locate[i]:
-            print('turn right')
-    
-    if (direction =='right'):
-        if locate[i-1] < locate[i]:
-            print('turn left')
-        elif locate[i-1] >  locate[i]:
-            print('turn right')
+        if (direction == 'up'):
+            if locate[i+1] > locate[i]:
+                print('turn right')
+            elif locate[i+1] < locate[i]:
+                print('turn left')
+        
+        if (direction =='right'):
+            if locate[i+1] > locate[i]:
+                print('turn right')
+            elif locate[i+1] < locate[i]:
+                print('turn left')
     
