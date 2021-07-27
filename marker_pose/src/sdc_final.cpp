@@ -20,6 +20,7 @@ ros::Publisher pub;
 int sleep_cnt = 0;
 int marker_id_cnt = 1;
 string direction;
+string temp_direction;
 
 string head_direction(int d)
 {
@@ -53,7 +54,7 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel",100);
     //pub = nh.advertise<geometry_msgs::Twist>("/turtle1/cmd_vel",100);
     geometry_msgs::Twist pub_msg;
-    ros::Rate r(1);
+    // ros::Rate r(1);
 
     ifstream fin("/home/acsl/Socket/orae_log.txt"); // fin 객체 생성(cin 처럼 이용!)
 
@@ -96,17 +97,20 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
     cout << "marker_id_split" << marker_id_cnt << ": " << marker_id_split[marker_id_cnt] << endl ;
     cout << "outside_cnt: " << marker_id_cnt << endl;
 
-    if (marker_id_cnt <= marker_id_split.size())
+    head = marker_id_split[marker_id_cnt] - marker_id_split[marker_id_cnt-1];
+    direction = head_direction(head);
+
+    if (marker_id_cnt <= marker_id_split.size()-1)
     {
         cout << "marker_id_split_size: " << marker_id_split.size() << endl;
-        int marker_id_gap = marker_id_split[marker_id_cnt+1] - marker_id_split[marker_id_cnt];
 
         if (id > 48)
         {
             ROS_INFO("Marker id is too high");
         }
         else if (id == marker_id_split[marker_id_cnt])
-        {              
+        {
+                          
             if (point_z > 0.77)
             {
                 if (point_x > 0.1)
@@ -127,13 +131,16 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
                 {
                     ROS_INFO("go");
                     pub_msg.linear.x = 0.2;
-                    pub.publish(pub_msg);
+                    pub.publish(pub_msg);               
                 }
+                temp_direction = direction;
             }
+            
+
             else
             {
                 ROS_INFO("stop");
-                ros::Duration(3.7).sleep();
+                ros::Duration(3.0).sleep();
                 pub_msg.linear.x = 0;
                 pub_msg.angular.z = 0;
                 pub.publish(pub_msg);
@@ -142,76 +149,106 @@ void msgCallback(const visualization_msgs::Marker::ConstPtr&msg)
         }
         else
         {
-
             cout << "turn" << endl;
 
-            head = marker_id_split[marker_id_cnt] - marker_id_split[marker_id_cnt-1];
-            direction = head_direction(head);
             cout << "direction: " << direction << endl;
+            cout << "temp_direction: " << temp_direction << endl;
+            cout << "marker_id_split[marker_id_cnt-1]: " << marker_id_split[marker_id_cnt-1] << endl;
+            cout << "marker_id_split[marker_id_cnt]: " << marker_id_split[marker_id_cnt] << endl;
+            cout << "marker_id_split[marker_id_cnt+1]: " << marker_id_split[marker_id_cnt+1] << endl;
+            cout << "head: " << head << endl;
+
         
-            if (direction == "down")
+            if (temp_direction != direction)
             {
-                if (marker_id_split[marker_id_cnt+1] < marker_id_split[marker_id_cnt])
+                if (temp_direction == "down")
                 {
-                    cout <<  "turn right" << endl;
-                    pub_msg.angular.z = 1.5707963268/4.0;
-                    pub.publish(pub_msg);
+                    if (marker_id_split[marker_id_cnt] > marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn left" << endl;
+                        pub_msg.angular.z = 1.5707963268/4.0;
+                        pub.publish(pub_msg);            
+                    }
+                    else if (marker_id_split[marker_id_cnt] < marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn right" << endl;
+                        pub_msg.angular.z = -1.5707963268/4.0;
+                        pub.publish(pub_msg);           
+                    }
                 }
-                else if (marker_id_split[marker_id_cnt+1] > marker_id_split[marker_id_cnt])
+                    
+                if (temp_direction =="left")
                 {
-                    cout <<  "turn left" << endl;
-                    pub_msg.angular.z = -1.5707963268/4.0;
-                    pub.publish(pub_msg);
+                    if (marker_id_split[marker_id_cnt] < marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn right" << endl;
+                        pub_msg.angular.z = -1.5707963268/4.0;
+                        pub.publish(pub_msg);            
+                    }
+                    else if (marker_id_split[marker_id_cnt] > marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn left" << endl;
+                        pub_msg.angular.z = 1.5707963268/4.0;
+                        pub.publish(pub_msg);          
+                    }
+                }
+                    
+                if (temp_direction == "up")
+                {
+                    if (marker_id_split[marker_id_cnt] < marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn left" << endl;
+                        pub_msg.angular.z = 1.5707963268/4.0;
+                        pub.publish(pub_msg);
+                    }
+                    else if (marker_id_split[marker_id_cnt] > marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn right" << endl;
+                        pub_msg.angular.z = -1.5707963268/4.0;
+                        pub.publish(pub_msg);
+                    }
+                }
+                
+                if (temp_direction =="right")
+                {
+                    if (marker_id_split[marker_id_cnt] < marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn left" << endl;
+                        pub_msg.angular.z = 1.5707963268/4.0;
+                        pub.publish(pub_msg);
+                    }
+                    else if (marker_id_split[marker_id_cnt] > marker_id_split[marker_id_cnt-1])
+                    {
+                        cout <<  "turn right" << endl;
+                        pub_msg.angular.z = -1.5707963268/4.0;
+                        pub.publish(pub_msg);
+                    }
                 }
             }
-                
-            if (direction =="left")
-            {
-                if (marker_id_split[marker_id_cnt+1] < marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn right" << endl;
-                    pub_msg.angular.z = 1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
-                else if (marker_id_split[marker_id_cnt+1] > marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn left" << endl;
-                    pub_msg.angular.z = -1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
-            }
-                
-            if (direction == "up")
-            {
-                if (marker_id_split[marker_id_cnt+1] > marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn right" << endl;
-                    pub_msg.angular.z = 1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
-                else if (marker_id_split[marker_id_cnt+1] < marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn left" << endl;
-                    pub_msg.angular.z = -1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
+            // else if (temp_direction == direction)
+            // {
+            //     if (point_x > 0.1)
+            //     {
+            //         ROS_INFO("turn right");
+            //         pub_msg.linear.x = 0;
+            //         pub_msg.angular.z = -0.1;
+            //         pub.publish(pub_msg);
+            //     }
+            //     else if (point_x < -0.1)
+            //     {
+            //         ROS_INFO("turn left");
+            //         pub_msg.linear.x = 0;
+            //         pub_msg.angular.z = 0.1;
+            //         pub.publish(pub_msg);
+            //     }
+            //     else
+            //     {
+            //         ROS_INFO("go");
+            //         pub_msg.linear.x = 0.2;
+            //         pub.publish(pub_msg);               
+            //     }
             }
             
-            if (direction =="right")
-            {
-                if (marker_id_split[marker_id_cnt+1] > marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn right" << endl;
-                    pub_msg.angular.z = 1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
-                else if (marker_id_split[marker_id_cnt+1] < marker_id_split[marker_id_cnt])
-                {
-                    cout <<  "turn left" << endl;
-                    pub_msg.angular.z = -1.5707963268/4.0;
-                    pub.publish(pub_msg);
-                }
-            }
         }
     }
     else
